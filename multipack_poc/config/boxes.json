@@ -1,0 +1,9 @@
+{
+  "standard_box": {
+    "name": "Standard Box",
+    "length": 600,
+    "width": 400,
+    "height": 400,
+    "max_weight": 25000
+  }
+}
