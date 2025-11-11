@@ -30,7 +30,14 @@ def main() -> None:
     pallets_data = load_config(config_dir / "pallets.json")
     boxes_data = load_config(config_dir / "boxes.json")
 
-    package = Package(length=200, width=150, height=100, weight=500, name="Sample Carton")
+    package = Package(
+        length=200,
+        width=5,
+        height=300,
+        weight=500,
+        name="Sample Sheet",
+        thickness_axis="width",
+    )
     box_template = boxes_data["standard_box"]
     box = Box(
         length=box_template["length"],

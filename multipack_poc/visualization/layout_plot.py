@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterable, List, Sequence, Tuple
+
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.colors import qualitative
@@ -36,7 +37,7 @@ def _mesh_from_prism(
     dz: int,
     color: str,
     name: str,
-    opacity: float = 0.8,
+    opacity: float = 0.92,
 ) -> go.Mesh3d:
     xs, ys, zs = _prism_vertices(x, y, z, dx, dy, dz)
     # Triangle indices referencing the 8 vertices.
@@ -54,6 +55,55 @@ def _mesh_from_prism(
         color=color,
         name=name,
         showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.4, diffuse=0.9, specular=0.3, fresnel=0.1, roughness=0.5),
+        lightposition=dict(x=0.3, y=0.6, z=1.0),
+        hoverinfo="skip",
+    )
+
+
+def _edge_trace(
+    x: int,
+    y: int,
+    z: int,
+    dx: int,
+    dy: int,
+    dz: int,
+    color: str,
+    name: str,
+) -> go.Scatter3d:
+    xs, ys, zs = _prism_vertices(x, y, z, dx, dy, dz)
+    edges = [
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
+    ]
+    x_coords: List[float] = []
+    y_coords: List[float] = []
+    z_coords: List[float] = []
+    for start, end in edges:
+        x_coords.extend([xs[start], xs[end], None])
+        y_coords.extend([ys[start], ys[end], None])
+        z_coords.extend([zs[start], zs[end], None])
+
+    return go.Scatter3d(
+        x=x_coords,
+        y=y_coords,
+        z=z_coords,
+        mode="lines",
+        line=dict(color=color, width=3),
+        name=name,
+        showlegend=False,
+        hoverinfo="skip",
     )
 
 
@@ -61,7 +111,13 @@ def _color_for_index(index: int) -> str:
     return DEFAULT_COLOR_SEQUENCE[index % len(DEFAULT_COLOR_SEQUENCE)]
 
 
-def _container_wireframe(dx: int, dy: int, dz: int, name: str, color: str = "#333333") -> go.Scatter3d:
+def _container_wireframe(
+    dx: int,
+    dy: int,
+    dz: int,
+    name: str,
+    color: str = "#4a5568",
+) -> go.Scatter3d:
     vertices = [
         (0, 0, 0),
         (dx, 0, 0),
@@ -100,15 +156,22 @@ def _container_wireframe(dx: int, dy: int, dz: int, name: str, color: str = "#33
         z=z_coords,
         mode="lines",
         name=name,
-        line=dict(color=color, width=3),
+        line=dict(color=color, width=4),
         showlegend=True,
+        hoverinfo="skip",
     )
 
 
-def _pack_geometry_traces(placements: Sequence[Placement], color_offset: int = 0, label: str = "Item") -> List[go.Mesh3d]:
-    traces: List[go.Mesh3d] = []
+def _pack_geometry_traces(
+    placements: Sequence[Placement],
+    color_offset: int = 0,
+    label: str = "Item",
+) -> List[go.BaseTraceType]:
+    traces: List[go.BaseTraceType] = []
     for idx, placement in enumerate(placements):
         dx, dy, dz = placement.orientation
+        color = _color_for_index(idx + color_offset)
+        name = f"{label} {idx + 1}"
         traces.append(
             _mesh_from_prism(
                 placement.x,
@@ -117,8 +180,20 @@ def _pack_geometry_traces(placements: Sequence[Placement], color_offset: int = 0
                 dx,
                 dy,
                 dz,
-                color=_color_for_index(idx + color_offset),
-                name=f"{label} {idx + 1}",
+                color=color,
+                name=name,
+            )
+        )
+        traces.append(
+            _edge_trace(
+                placement.x,
+                placement.y,
+                placement.z,
+                dx,
+                dy,
+                dz,
+                color="#1a202c",
+                name=name,
             )
         )
     return traces
@@ -130,7 +205,9 @@ def carton_in_box_figure(
     result: CartonBoxPackingResult,
 ) -> go.Figure:
     fig = go.Figure()
-    fig.add_trace(_container_wireframe(box.length, box.width, box.height, name=box.name))
+    fig.add_trace(
+        _container_wireframe(box.length, box.width, box.height, name=box.name, color="#2d3748")
+    )
     for trace in _pack_geometry_traces(result.placements, label=package.name):
         fig.add_trace(trace)
 
@@ -141,6 +218,28 @@ def carton_in_box_figure(
             yaxis_title="Width (mm)",
             zaxis_title="Height (mm)",
             aspectmode="data",
+            xaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+            yaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+            zaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+        ),
+        paper_bgcolor="#f7f9fc",
+        plot_bgcolor="#f7f9fc",
+        legend=dict(
+            bgcolor="rgba(255,255,255,0.8)",
+            bordercolor="#cbd5e0",
+            borderwidth=1,
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )
@@ -153,7 +252,15 @@ def pallet_layout_figure(
     result: BoxPalletPackingResult,
 ) -> go.Figure:
     fig = go.Figure()
-    fig.add_trace(_container_wireframe(pallet.length, pallet.width, pallet.usable_height(), name=pallet.name))
+    fig.add_trace(
+        _container_wireframe(
+            pallet.length,
+            pallet.width,
+            pallet.usable_height(),
+            name=pallet.name,
+            color="#2d3748",
+        )
+    )
     for trace in _pack_geometry_traces(result.placements, label=box.name):
         fig.add_trace(trace)
 
@@ -164,6 +271,28 @@ def pallet_layout_figure(
             yaxis_title="Width (mm)",
             zaxis_title="Height (mm)",
             aspectmode="data",
+            xaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+            yaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+            zaxis=dict(
+                backgroundcolor="#f2f5fb",
+                gridcolor="#cbd5e0",
+                zerolinecolor="#a0aec0",
+            ),
+        ),
+        paper_bgcolor="#f7f9fc",
+        plot_bgcolor="#f7f9fc",
+        legend=dict(
+            bgcolor="rgba(255,255,255,0.8)",
+            bordercolor="#cbd5e0",
+            borderwidth=1,
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )

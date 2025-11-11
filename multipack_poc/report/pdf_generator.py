@@ -50,6 +50,7 @@ def _input_table(package: Package, box: Box, pallet: Pallet) -> Table:
     rows = [
         ("Carton Name", package.name),
         ("Carton Dimensions (mm)", f"{package.length} x {package.width} x {package.height}"),
+        ("Carton Thickness Axis", package.thickness_axis or "Free"),
         ("Carton Weight (g)", f"{package.weight:,}"),
         ("Box Name", box.name),
         ("Box Inner Dimensions (mm)", f"{box.length} x {box.width} x {box.height}"),

@@ -10,25 +10,25 @@ from math import sqrt
 from typing import Iterable, List, Sequence, Tuple
 
 
-Orientation = Tuple[int, int, int]
+Orientation = Tuple[float, float, float]
 
 
-def generate_axis_orientations(dimensions: Sequence[int]) -> List[Orientation]:
+def generate_axis_orientations(dimensions: Sequence[int]) -> List[Tuple[int, int, int]]:
     """
     Return the six right-handed axis-aligned orientations for a rectangular item.
     """
     dims = tuple(int(value) for value in dimensions)
-    unique: set[Orientation] = set(permutations(dims))
+    unique: set[Tuple[int, int, int]] = set(permutations(dims))
     return list(unique)
 
 
-def unique_horizontal_orientations(dimensions: Sequence[int]) -> List[Orientation]:
+def unique_horizontal_orientations(dimensions: Sequence[float]) -> List[Orientation]:
     """
     Return the orientations that preserve height (no sideways flipping).
 
     This is used when stacking boxes on pallets where tipping the box is not allowed.
     """
-    l, w, h = map(int, dimensions)
+    l, w, h = (float(value) for value in dimensions)
     return [(l, w, h), (w, l, h)] if l != w else [(l, w, h)]
 
 
@@ -61,9 +61,9 @@ class Placement:
     Represents the placement of an item within a container.
     """
 
-    x: int
-    y: int
-    z: int
+    x: float
+    y: float
+    z: float
     orientation: Orientation
     item_index: int
 
@@ -109,7 +109,7 @@ def footprint_coverage(
     container_width: int,
 ) -> float:
     """
-    Compute the percentage of footprint covered in the XY plane using Shapely.
+    Compute the percentage of footprint covered in the XY plane using a plane sweep.
     """
     if not placements:
         return 0.0
@@ -179,7 +179,7 @@ def validate_clearances(
 ) -> bool:
     """
     Optional helper that checks the minimum centre-to-centre distance between placements.
-    Uses SciPy's cdist for efficient pairwise distance computation.
+    Implemented with straightforward pairwise checks to avoid heavy dependencies.
     """
     if len(placements) <= 1:
         return True

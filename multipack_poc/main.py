@@ -33,12 +33,44 @@ def load_json_config(filename: str) -> Dict[str, Any]:
 def build_package_inputs() -> Package:
     st.subheader("Carton Details")
     col1, col2, col3, col4 = st.columns(4)
-    length = col1.number_input("Length (mm)", min_value=10, value=200, step=10)
-    width = col2.number_input("Width (mm)", min_value=10, value=150, step=10)
-    height = col3.number_input("Height (mm)", min_value=10, value=100, step=10)
-    weight = col4.number_input("Weight (g)", min_value=1, value=500, step=10)
+    length = col1.number_input(
+        "Length (mm)", min_value=1.0, value=200.0, step=0.1, format="%.1f"
+    )
+    width = col2.number_input(
+        "Width (mm)", min_value=1.0, value=150.0, step=0.1, format="%.1f"
+    )
+    height = col3.number_input(
+        "Height (mm)", min_value=1.0, value=100.0, step=0.1, format="%.1f"
+    )
+    weight = col4.number_input("Weight (g)", min_value=1.0, value=500.0, step=1.0, format="%.1f")
     name = st.text_input("Carton Name", value="Carton")
-    return Package(length=int(length), width=int(width), height=int(height), weight=int(weight), name=name)
+    axis_label = st.selectbox(
+        "Lock thickness axis",
+        options=[
+            "Free rotation (carton - experimental)",
+            "Keep length vertical",
+            "Keep width vertical (sheet thickness)",
+            "Keep height vertical",
+        ],
+        index=2,
+        help="Select how the item may be oriented inside the box.",
+    )
+    axis_map = {
+        "Free rotation (carton)": None,
+        "Keep length vertical": "length",
+        "Keep width vertical (sheet thickness)": "width",
+        "Keep height vertical": "height",
+        "Free rotation (carton - experimental)": None,
+    }
+    thickness_axis = axis_map.get(axis_label, None)
+    return Package(
+        length=float(length),
+        width=float(width),
+        height=float(height),
+        weight=float(weight),
+        name=name,
+        thickness_axis=thickness_axis,
+    )
 
 
 def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
@@ -48,18 +80,26 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
     selected_template = st.selectbox("Template", template_names, index=0)
     template = template_options[selected_template]
     col1, col2, col3, col4, col5 = st.columns(5)
-    length = col1.number_input("Inner Length (mm)", min_value=50, value=int(template["length"]), step=10)
-    width = col2.number_input("Inner Width (mm)", min_value=50, value=int(template["width"]), step=10)
-    height = col3.number_input("Inner Height (mm)", min_value=50, value=int(template["height"]), step=10)
-    max_weight = col4.number_input("Max Weight (g)", min_value=100, value=int(template["max_weight"]), step=100)
-    tare_weight = col5.number_input("Tare Weight (g)", min_value=0, value=500, step=50)
+    length = col1.number_input(
+        "Inner Length (mm)", min_value=1.0, value=float(template["length"]), step=0.1, format="%.1f"
+    )
+    width = col2.number_input(
+        "Inner Width (mm)", min_value=1.0, value=float(template["width"]), step=0.1, format="%.1f"
+    )
+    height = col3.number_input(
+        "Inner Height (mm)", min_value=1.0, value=float(template["height"]), step=0.1, format="%.1f"
+    )
+    max_weight = col4.number_input(
+        "Max Weight (g)", min_value=1.0, value=float(template["max_weight"]), step=10.0, format="%.1f"
+    )
+    tare_weight = col5.number_input("Tare Weight (g)", min_value=0.0, value=500.0, step=10.0, format="%.1f")
     name = st.text_input("Box Name", value=template["name"])
     return Box(
-        length=int(length),
-        width=int(width),
-        height=int(height),
-        max_weight=int(max_weight),
-        tare_weight=int(tare_weight),
+        length=float(length),
+        width=float(width),
+        height=float(height),
+        max_weight=float(max_weight),
+        tare_weight=float(tare_weight),
         name=name,
     )
 
@@ -71,21 +111,35 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
     selected_template = st.selectbox("Pallet Type", template_names, index=0)
     template = template_options[selected_template]
     col1, col2, col3 = st.columns(3)
-    length = col1.number_input("Length (mm)", min_value=500, value=int(template["length"]), step=10)
-    width = col2.number_input("Width (mm)", min_value=500, value=int(template["width"]), step=10)
-    height = col3.number_input("Deck Height (mm)", min_value=50, value=int(template["height"]), step=5)
+    length = col1.number_input(
+        "Length (mm)", min_value=1.0, value=float(template["length"]), step=0.1, format="%.1f"
+    )
+    width = col2.number_input(
+        "Width (mm)", min_value=1.0, value=float(template["width"]), step=0.1, format="%.1f"
+    )
+    height = col3.number_input(
+        "Deck Height (mm)", min_value=1.0, value=float(template["height"]), step=0.1, format="%.1f"
+    )
 
     col4, col5 = st.columns(2)
-    max_height = col4.number_input("Max Stack Height (mm)", min_value=int(height + 100), value=int(template["max_height"]), step=50)
-    max_weight = col5.number_input("Max Weight (g)", min_value=1000, value=int(template["max_weight"]), step=100)
+    max_height = col4.number_input(
+        "Max Stack Height (mm)",
+        min_value=float(height + 1.0),
+        value=float(template["max_height"]),
+        step=1.0,
+        format="%.1f",
+    )
+    max_weight = col5.number_input(
+        "Max Weight (g)", min_value=1.0, value=float(template["max_weight"]), step=10.0, format="%.1f"
+    )
     name = st.text_input("Pallet Name", value=template["name"])
 
     return Pallet(
-        length=int(length),
-        width=int(width),
-        height=int(height),
-        max_height=int(max_height),
-        max_weight=int(max_weight),
+        length=float(length),
+        width=float(width),
+        height=float(height),
+        max_height=float(max_height),
+        max_weight=float(max_weight),
         name=name,
     )
 
@@ -182,7 +236,8 @@ def main() -> None:
         st.write(
             f"- Volume Utilisation: **{carton_result.volume_utilisation_pct:.2f}%**  \n"
             f"- Footprint Utilisation: **{carton_result.footprint_utilisation_pct:.2f}%**  \n"
-            f"- Weight Utilisation: **{carton_result.weight_utilisation_pct:.2f}%**"
+            f"- Weight Utilisation: **{carton_result.weight_utilisation_pct:.2f}%**  \n"
+            f"- Thickness Axis: **{package.thickness_axis or 'Free'}**"
         )
 
         st.markdown("#### Pallet Utilisation")
