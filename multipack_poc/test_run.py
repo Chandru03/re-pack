@@ -1,11 +1,15 @@
 """
-Simple CLI script to execute the Multipack optimisation pipeline end-to-end.
+Simple CLI script to execute the Re-pack optimisation pipeline end-to-end.
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+# Add parent directory to path to allow imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from multipack_poc.core.solver_box_to_pallet import pack_boxes_on_pallet
 from multipack_poc.core.solver_carton_to_box import pack_cartons_into_box
@@ -81,7 +85,7 @@ def main() -> None:
         layout_images=[carton_image_path, pallet_image_path],
     )
 
-    print("=== Multipack Optimisation Summary ===")
+    print("=== Re-pack Optimisation Summary ===")
     print(f"Items per Box: {carton_result.items_per_box}")
     print(f"Boxes per Layer: {pallet_result.boxes_per_layer}")
     print(f"Layers per Pallet: {pallet_result.layers_per_pallet}")

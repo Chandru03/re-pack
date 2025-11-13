@@ -105,7 +105,7 @@ def generate_pdf_report(
         rightMargin=20 * mm,
         topMargin=15 * mm,
         bottomMargin=15 * mm,
-        title="Multipack Optimisation Report",
+        title="Re-pack Optimisation Report",
     )
 
     styles = getSampleStyleSheet()
@@ -117,7 +117,7 @@ def generate_pdf_report(
     )
 
     story: list = [
-        Paragraph("Multipack Optimisation Report", title_style),
+        Paragraph("Re-pack Optimisation Report", title_style),
         Spacer(1, 8 * mm),
         Paragraph("Input Summary", subtitle_style),
         Spacer(1, 4 * mm),

@@ -1,16 +1,20 @@
 """
-Streamlit entrypoint for the Multipack PoC.
+Streamlit entrypoint for the Re-pack PoC.
 """
 
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict
 
 import streamlit as st
+
+# Add parent directory to path to allow imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from multipack_poc.core.solver_box_to_pallet import BoxPalletPackingResult, pack_boxes_on_pallet
 from multipack_poc.core.solver_carton_to_box import CartonBoxPackingResult, pack_cartons_into_box
@@ -145,8 +149,8 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Multipack Optimiser", layout="wide")
-    st.title("Multipack Packing Optimisation (PoC)")
+    st.set_page_config(page_title="Re-pack Optimiser", layout="wide")
+    st.title("Re-pack Packing Optimisation (PoC)")
     st.write("Optimise carton packing into boxes and pallet stacking using Google OR-Tools.")
 
     pallet_templates = load_json_config("pallets.json")
