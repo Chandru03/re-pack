@@ -28,6 +28,131 @@ def _prism_vertices(x: int, y: int, z: int, dx: int, dy: int, dz: int) -> Tuple[
     return xs, ys, zs
 
 
+def _isometric_box_faces(
+    x: int,
+    y: int,
+    z: int,
+    dx: int,
+    dy: int,
+    dz: int,
+    name: str,
+    opacity: float = 1.0,
+) -> List[go.Mesh3d]:
+    """
+    Create an isometric-style box with colored faces:
+    - Top face: green
+    - Front face: blue  
+    - Right-side face: red
+    All faces are fully opaque for a solid appearance.
+    """
+    xs, ys, zs = _prism_vertices(x, y, z, dx, dy, dz)
+    faces = []
+    
+    # Top face (green) - vertices 4,5,6,7
+    faces.append(go.Mesh3d(
+        x=[xs[4], xs[5], xs[6], xs[7]],
+        y=[ys[4], ys[5], ys[6], ys[7]],
+        z=[zs[4], zs[5], zs[6], zs[7]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#4ade80",  # Green
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.7, diffuse=0.9, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    # Front face (blue) - vertices 0,1,5,4
+    faces.append(go.Mesh3d(
+        x=[xs[0], xs[1], xs[5], xs[4]],
+        y=[ys[0], ys[1], ys[5], ys[4]],
+        z=[zs[0], zs[1], zs[5], zs[4]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#60a5fa",  # Blue
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.7, diffuse=0.9, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    # Right-side face (red) - vertices 1,2,6,5
+    faces.append(go.Mesh3d(
+        x=[xs[1], xs[2], xs[6], xs[5]],
+        y=[ys[1], ys[2], ys[6], ys[5]],
+        z=[zs[1], zs[2], zs[6], zs[5]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#f87171",  # Red
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.7, diffuse=0.9, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    # Back face (darker green) - vertices 2,3,7,6
+    faces.append(go.Mesh3d(
+        x=[xs[2], xs[3], xs[7], xs[6]],
+        y=[ys[2], ys[3], ys[7], ys[6]],
+        z=[zs[2], zs[3], zs[7], zs[6]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#22c55e",  # Darker green
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.6, diffuse=0.8, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    # Left-side face (darker blue) - vertices 3,0,4,7
+    faces.append(go.Mesh3d(
+        x=[xs[3], xs[0], xs[4], xs[7]],
+        y=[ys[3], ys[0], ys[4], ys[7]],
+        z=[zs[3], zs[0], zs[4], zs[7]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#3b82f6",  # Darker blue
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.6, diffuse=0.8, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    # Bottom face (darker red) - vertices 0,3,2,1
+    faces.append(go.Mesh3d(
+        x=[xs[0], xs[3], xs[2], xs[1]],
+        y=[ys[0], ys[3], ys[2], ys[1]],
+        z=[zs[0], zs[3], zs[2], zs[1]],
+        i=[0, 0],
+        j=[1, 2],
+        k=[2, 3],
+        color="#ef4444",  # Darker red
+        opacity=1.0,  # Fully opaque
+        name=name,
+        showscale=False,
+        flatshading=True,
+        lighting=dict(ambient=0.6, diffuse=0.8, specular=0.1),
+        hoverinfo="skip",
+    ))
+    
+    return faces
+
+
 def _mesh_from_prism(
     x: int,
     y: int,
@@ -37,29 +162,13 @@ def _mesh_from_prism(
     dz: int,
     color: str,
     name: str,
-    opacity: float = 0.92,
-) -> go.Mesh3d:
-    xs, ys, zs = _prism_vertices(x, y, z, dx, dy, dz)
-    # Triangle indices referencing the 8 vertices.
-    i = [0, 0, 0, 4, 4, 4, 0, 1, 2, 3, 5, 6]
-    j = [1, 2, 3, 5, 6, 7, 4, 5, 6, 7, 6, 7]
-    k = [2, 3, 1, 6, 7, 5, 1, 2, 3, 0, 7, 4]
-    return go.Mesh3d(
-        x=xs,
-        y=ys,
-        z=zs,
-        i=i,
-        j=j,
-        k=k,
-        opacity=opacity,
-        color=color,
-        name=name,
-        showscale=False,
-        flatshading=True,
-        lighting=dict(ambient=0.4, diffuse=0.9, specular=0.3, fresnel=0.1, roughness=0.5),
-        lightposition=dict(x=0.3, y=0.6, z=1.0),
-        hoverinfo="skip",
-    )
+    opacity: float = 1.0,
+) -> List[go.Mesh3d]:
+    """
+    Create isometric-style box visualization with colored faces.
+    Returns a list of mesh traces for all faces.
+    """
+    return _isometric_box_faces(x, y, z, dx, dy, dz, name, opacity)
 
 
 def _edge_trace(
@@ -100,7 +209,7 @@ def _edge_trace(
         y=y_coords,
         z=z_coords,
         mode="lines",
-        line=dict(color=color, width=3),
+        line=dict(color=color, width=2.5),
         name=name,
         showlegend=False,
         hoverinfo="skip",
@@ -170,20 +279,20 @@ def _pack_geometry_traces(
     traces: List[go.BaseTraceType] = []
     for idx, placement in enumerate(placements):
         dx, dy, dz = placement.orientation
-        color = _color_for_index(idx + color_offset)
         name = f"{label} {idx + 1}"
-        traces.append(
-            _mesh_from_prism(
-                placement.x,
-                placement.y,
-                placement.z,
-                dx,
-                dy,
-                dz,
-                color=color,
-                name=name,
-            )
+        # Add all faces of the isometric box
+        face_meshes = _mesh_from_prism(
+            placement.x,
+            placement.y,
+            placement.z,
+            dx,
+            dy,
+            dz,
+            color="",  # Not used in isometric style
+            name=name,
         )
+        traces.extend(face_meshes)
+        # Add black edges
         traces.append(
             _edge_trace(
                 placement.x,
@@ -192,7 +301,7 @@ def _pack_geometry_traces(
                 dx,
                 dy,
                 dz,
-                color="#1a202c",
+                color="#000000",  # Black edges
                 name=name,
             )
         )

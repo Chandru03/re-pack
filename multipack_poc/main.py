@@ -38,15 +38,15 @@ def build_package_inputs() -> Package:
     st.subheader("Carton Details")
     col1, col2, col3, col4 = st.columns(4)
     length = col1.number_input(
-        "Length (mm)", min_value=1.0, value=200.0, step=0.1, format="%.1f"
+        "Length (mm)", min_value=0.01, value=200.0, step=0.01, format="%.2f"
     )
     width = col2.number_input(
-        "Width (mm)", min_value=1.0, value=150.0, step=0.1, format="%.1f"
+        "Width (mm)", min_value=0.01, value=150.0, step=0.01, format="%.2f"
     )
     height = col3.number_input(
-        "Height (mm)", min_value=1.0, value=100.0, step=0.1, format="%.1f"
+        "Height (mm)", min_value=0.01, value=100.0, step=0.01, format="%.2f"
     )
-    weight = col4.number_input("Weight (g)", min_value=1.0, value=500.0, step=1.0, format="%.1f")
+    weight = col4.number_input("Weight (g)", min_value=0.01, value=500.0, step=0.01, format="%.2f")
     name = st.text_input("Carton Name", value="Carton")
     axis_label = st.selectbox(
         "Lock thickness axis",
@@ -85,18 +85,18 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
     template = template_options[selected_template]
     col1, col2, col3, col4, col5 = st.columns(5)
     length = col1.number_input(
-        "Inner Length (mm)", min_value=1.0, value=float(template["length"]), step=0.1, format="%.1f"
+        "Inner Length (mm)", min_value=0.01, value=float(template["length"]), step=0.01, format="%.2f"
     )
     width = col2.number_input(
-        "Inner Width (mm)", min_value=1.0, value=float(template["width"]), step=0.1, format="%.1f"
+        "Inner Width (mm)", min_value=0.01, value=float(template["width"]), step=0.01, format="%.2f"
     )
     height = col3.number_input(
-        "Inner Height (mm)", min_value=1.0, value=float(template["height"]), step=0.1, format="%.1f"
+        "Inner Height (mm)", min_value=0.01, value=float(template["height"]), step=0.01, format="%.2f"
     )
     max_weight = col4.number_input(
-        "Max Weight (g)", min_value=1.0, value=float(template["max_weight"]), step=10.0, format="%.1f"
+        "Max Weight (g)", min_value=0.01, value=float(template["max_weight"]), step=0.01, format="%.2f"
     )
-    tare_weight = col5.number_input("Tare Weight (g)", min_value=0.0, value=500.0, step=10.0, format="%.1f")
+    tare_weight = col5.number_input("Tare Weight (g)", min_value=0.0, value=500.0, step=0.01, format="%.2f")
     name = st.text_input("Box Name", value=template["name"])
     return Box(
         length=float(length),
@@ -116,25 +116,25 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
     template = template_options[selected_template]
     col1, col2, col3 = st.columns(3)
     length = col1.number_input(
-        "Length (mm)", min_value=1.0, value=float(template["length"]), step=0.1, format="%.1f"
+        "Length (mm)", min_value=0.01, value=float(template["length"]), step=0.01, format="%.2f"
     )
     width = col2.number_input(
-        "Width (mm)", min_value=1.0, value=float(template["width"]), step=0.1, format="%.1f"
+        "Width (mm)", min_value=0.01, value=float(template["width"]), step=0.01, format="%.2f"
     )
     height = col3.number_input(
-        "Deck Height (mm)", min_value=1.0, value=float(template["height"]), step=0.1, format="%.1f"
+        "Deck Height (mm)", min_value=0.01, value=float(template["height"]), step=0.01, format="%.2f"
     )
 
     col4, col5 = st.columns(2)
     max_height = col4.number_input(
         "Max Stack Height (mm)",
-        min_value=float(height + 1.0),
+        min_value=float(height + 0.01),
         value=float(template["max_height"]),
-        step=1.0,
-        format="%.1f",
+        step=0.01,
+        format="%.2f",
     )
     max_weight = col5.number_input(
-        "Max Weight (g)", min_value=1.0, value=float(template["max_weight"]), step=10.0, format="%.1f"
+        "Max Weight (g)", min_value=0.01, value=float(template["max_weight"]), step=0.01, format="%.2f"
     )
     name = st.text_input("Pallet Name", value=template["name"])
 
@@ -181,7 +181,28 @@ def main() -> None:
                 time_limit_sec=float(time_limit),
             )
             if pallet_result.layers_per_pallet <= 0:
-                st.warning("Unable to stack boxes on the pallet within constraints.")
+                st.warning(f"Unable to stack boxes on the pallet: {pallet_result.solver_status}")
+                st.info(
+                    f"**Pallet constraints:**\n"
+                    f"- Usable height: {pallet.usable_height():.2f}mm "
+                    f"(Max height: {pallet.max_height:.2f}mm - Deck height: {pallet.height:.2f}mm)\n"
+                    f"- Max weight: {pallet.max_weight:,.0f}g\n\n"
+                    f"**Box dimensions:**\n"
+                    f"- Height: {box.height:.2f}mm\n"
+                    f"- Filled box weight: {filled_box_weight:,.0f}g\n\n"
+                    f"**Issue:** "
+                    + (
+                        f"Box height ({box.height:.2f}mm) exceeds usable height ({pallet.usable_height():.2f}mm). "
+                        f"Increase Max Stack Height or decrease Box Height."
+                        if "height insufficient" in pallet_result.solver_status.lower()
+                        else (
+                            f"Filled box weight ({filled_box_weight:,.0f}g) exceeds pallet capacity ({pallet.max_weight:,.0f}g). "
+                            f"Reduce box weight or increase pallet max weight."
+                            if "weight" in pallet_result.solver_status.lower()
+                            else pallet_result.solver_status
+                        )
+                    )
+                )
 
             carton_fig = layout_plot.carton_in_box_figure(package, box, carton_result)
             pallet_fig = layout_plot.pallet_layout_figure(box, pallet, pallet_result)
