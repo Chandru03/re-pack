@@ -48,7 +48,7 @@ def _build_table(data: Sequence[Sequence[str]], column_widths: Sequence[float]) 
 def _input_table(package: Package, box: Box, pallet: Pallet) -> Table:
     headers = ["Parameter", "Value"]
     rows = [
-        ("Carton Name", package.name),
+        ("Item Name", package.name),
         ("Carton Dimensions (mm)", f"{package.length} x {package.width} x {package.height}"),
         ("Carton Thickness Axis", package.thickness_axis or "Free"),
         ("Carton Weight (g)", f"{package.weight:,}"),

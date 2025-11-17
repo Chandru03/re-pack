@@ -47,7 +47,7 @@ def build_package_inputs() -> Package:
         "Height (mm)", min_value=0.01, value=100.0, step=0.01, format="%.2f"
     )
     weight = col4.number_input("Weight (g)", min_value=0.01, value=500.0, step=0.01, format="%.2f")
-    name = st.text_input("Carton Name", value="Carton")
+    name = st.text_input("Item Name", value="Carton")
     axis_label = st.selectbox(
         "Lock thickness axis",
         options=[
