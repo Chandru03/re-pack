@@ -313,7 +313,7 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
 def main() -> None:
     st.set_page_config(page_title="Re-pack Optimiser", layout="wide")
     st.title("Re-pack Packing Optimisation")
-    st.markdown(" .")
+    
     st.divider()
 
     pallet_templates = load_json_config("pallets.json")
