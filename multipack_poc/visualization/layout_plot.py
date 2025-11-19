@@ -315,7 +315,7 @@ def carton_in_box_figure(
 ) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(
-        _container_wireframe(box.length, box.width, box.height, name=box.name, color="#2d3748")
+        _container_wireframe(box.length, box.width, box.height, name=box.name, color="#94a3b8")
     )
     for trace in _pack_geometry_traces(result.placements, label=package.name):
         fig.add_trace(trace)
@@ -327,28 +327,37 @@ def carton_in_box_figure(
             yaxis_title="Width (mm)",
             zaxis_title="Height (mm)",
             aspectmode="data",
+            bgcolor="#1e1e1e",  # Dark background
             xaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
             yaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
             zaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
         ),
-        paper_bgcolor="#f7f9fc",
-        plot_bgcolor="#f7f9fc",
+        paper_bgcolor="#1e1e1e",
+        plot_bgcolor="#1e1e1e",
+        font=dict(color="#e2e8f0"),
         legend=dict(
-            bgcolor="rgba(255,255,255,0.8)",
-            bordercolor="#cbd5e0",
+            bgcolor="rgba(30, 30, 30, 0.9)",
+            bordercolor="#4a5568",
             borderwidth=1,
+            font=dict(color="#e2e8f0"),
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )
@@ -367,7 +376,7 @@ def pallet_layout_figure(
             pallet.width,
             pallet.usable_height(),
             name=pallet.name,
-            color="#2d3748",
+            color="#94a3b8",
         )
     )
     for trace in _pack_geometry_traces(result.placements, label=box.name):
@@ -380,28 +389,37 @@ def pallet_layout_figure(
             yaxis_title="Width (mm)",
             zaxis_title="Height (mm)",
             aspectmode="data",
+            bgcolor="#1e1e1e",  # Dark background
             xaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
             yaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
             zaxis=dict(
-                backgroundcolor="#f2f5fb",
-                gridcolor="#cbd5e0",
-                zerolinecolor="#a0aec0",
+                backgroundcolor="#1e1e1e",
+                gridcolor="#4a5568",
+                zerolinecolor="#718096",
+                titlefont=dict(color="#e2e8f0"),
+                tickfont=dict(color="#cbd5e0"),
             ),
         ),
-        paper_bgcolor="#f7f9fc",
-        plot_bgcolor="#f7f9fc",
+        paper_bgcolor="#1e1e1e",
+        plot_bgcolor="#1e1e1e",
+        font=dict(color="#e2e8f0"),
         legend=dict(
-            bgcolor="rgba(255,255,255,0.8)",
-            bordercolor="#cbd5e0",
+            bgcolor="rgba(30, 30, 30, 0.9)",
+            bordercolor="#4a5568",
             borderwidth=1,
+            font=dict(color="#e2e8f0"),
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )

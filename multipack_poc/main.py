@@ -183,52 +183,25 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
 
 def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
     with st.expander("Pallet Configuration", expanded=True):
+        # Get the currently selected template name from session state
+        # (selection is now handled outside the form)
         template_options = {value["name"]: value for value in pallet_templates.values()}
-        template_names = list(template_options.keys())
+        selected_template_name = st.session_state.selected_pallet_type
         
-        # Initialize session state for pallet dimensions on first run
-        if "selected_pallet_type" not in st.session_state:
-            st.session_state.selected_pallet_type = template_names[0]
-            template = template_options[template_names[0]]
-            st.session_state.pallet_length = float(template["length"])
-            st.session_state.pallet_width = float(template["width"])
-            st.session_state.pallet_height = float(template["height"])
-            st.session_state.pallet_max_height = float(template["max_height"])
-            st.session_state.pallet_max_weight = float(template["max_weight"])
-            st.session_state.pallet_name = template["name"]
-        
-        # Get current template index
-        current_index = template_names.index(st.session_state.selected_pallet_type) if st.session_state.selected_pallet_type in template_names else 0
-        
-        # Selectbox - update session state when type changes
-        selected_template_name = st.selectbox(
-            "Pallet Type", 
-            template_names, 
-            index=current_index,
-            key="pallet_type_selectbox",
-            help="Select a standard pallet size. Dimensions will auto-populate but can be customized."
-        )
-        
-        # Get the selected template
-        template = template_options[selected_template_name]
-        
-        # Check if template changed - if so, update session state with template values
-        if selected_template_name != st.session_state.selected_pallet_type:
-            st.session_state.selected_pallet_type = selected_template_name
-            st.session_state.pallet_length = float(template["length"])
-            st.session_state.pallet_width = float(template["width"])
-            # Keep height custom - don't update from template (user can set it manually)
-            st.session_state.pallet_max_height = float(template["max_height"])
-            st.session_state.pallet_max_weight = float(template["max_weight"])
-            st.session_state.pallet_name = template["name"]
-        
-        # Use session state values (which are updated when template changes)
+        # Use session state values (which are updated when template changes outside form)
         # Include template name in keys to force widget recreation when template changes
         key_suffix = f"_{selected_template_name}"
         
+        # Get current values from session state (updated by callback or sync check above)
+        current_length = st.session_state.pallet_length
+        current_width = st.session_state.pallet_width
+        current_max_height = st.session_state.pallet_max_height
+        current_max_weight = st.session_state.pallet_max_weight
+        current_name = st.session_state.pallet_name
+        
         name = st.text_input(
             "Pallet Name", 
-            value=st.session_state.pallet_name, 
+            value=current_name, 
             key=f"pallet_name_input{key_suffix}",
             help="Name or identifier for the pallet"
         )
@@ -238,7 +211,7 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
         length = col1.number_input(
             "Length (mm)", 
             min_value=0.01, 
-            value=st.session_state.pallet_length, 
+            value=current_length, 
             step=0.01, 
             format="%.2f",
             key=f"pallet_length_input{key_suffix}",
@@ -247,7 +220,7 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
         width = col2.number_input(
             "Width (mm)", 
             min_value=0.01, 
-            value=st.session_state.pallet_width, 
+            value=current_width, 
             step=0.01, 
             format="%.2f",
             key=f"pallet_width_input{key_suffix}",
@@ -272,7 +245,7 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
         max_height = col4.number_input(
             "Max Stack Height (mm)",
             min_value=float(height + 0.01),
-            value=st.session_state.pallet_max_height,
+            value=current_max_height,
             step=0.01,
             format="%.2f",
             key=f"pallet_max_height_input{key_suffix}",
@@ -281,7 +254,7 @@ def build_pallet_inputs(pallet_templates: Dict[str, Any]) -> Pallet:
         max_weight = col5.number_input(
             "Max Weight (g)", 
             min_value=0.01, 
-            value=st.session_state.pallet_max_weight, 
+            value=current_max_weight, 
             step=0.01, 
             format="%.2f",
             key=f"pallet_max_weight_input{key_suffix}",
@@ -319,9 +292,47 @@ def main() -> None:
     pallet_templates = load_json_config("pallets.json")
     box_templates = load_json_config("boxes.json")
 
+    # Build pallet type selection outside form to allow dynamic updates
+    # Initialize session state if needed
+    if "selected_pallet_type" not in st.session_state:
+        template_options = {value["name"]: value for value in pallet_templates.values()}
+        template_names = list(template_options.keys())
+        st.session_state.selected_pallet_type = template_names[0]
+        template = template_options[template_names[0]]
+        st.session_state.pallet_length = float(template["length"])
+        st.session_state.pallet_width = float(template["width"])
+        st.session_state.pallet_height = float(template["height"])
+        st.session_state.pallet_max_height = float(template["max_height"])
+        st.session_state.pallet_max_weight = float(template["max_weight"])
+        st.session_state.pallet_name = template["name"]
+    
+    # Pallet type selection outside form for dynamic updates
+    template_options = {value["name"]: value for value in pallet_templates.values()}
+    template_names = list(template_options.keys())
+    current_index = template_names.index(st.session_state.selected_pallet_type) if st.session_state.selected_pallet_type in template_names else 0
+    
+    selected_template_name = st.selectbox(
+        "Pallet Type", 
+        template_names, 
+        index=current_index,
+        key="pallet_type_selectbox_outside",
+        help="Select a standard pallet size. Dimensions will auto-populate but can be customized."
+    )
+    
+    # Update session state if template changed
+    if selected_template_name != st.session_state.selected_pallet_type:
+        template = template_options[selected_template_name]
+        st.session_state.selected_pallet_type = selected_template_name
+        st.session_state.pallet_length = float(template["length"])
+        st.session_state.pallet_width = float(template["width"])
+        st.session_state.pallet_max_height = float(template["max_height"])
+        st.session_state.pallet_max_weight = float(template["max_weight"])
+        st.session_state.pallet_name = template["name"]
+        st.rerun()
+
     # Build all inputs in a form
     with st.form("input_form"):
-        # Build pallet inputs first (outside form was causing issues, now inside with proper structure)
+        # Build pallet inputs (now inside form, but type selection is outside)
         pallet = build_pallet_inputs(pallet_templates)
         st.divider()
         package = build_package_inputs()
