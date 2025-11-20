@@ -54,6 +54,8 @@ def _input_table(package: Package, box: Box, pallet: Pallet) -> Table:
         ("Carton Weight (g)", f"{package.weight:,}"),
         ("Box Name", box.name),
         ("Box Inner Dimensions (mm)", f"{box.length} x {box.width} x {box.height}"),
+        ("Box Wall Thickness (mm)", f"{box.wall_thickness:.2f}"),
+        ("Box Outer Dimensions (mm)", f"{box.outer_length:.2f} x {box.outer_width:.2f} x {box.outer_height:.2f}"),
         ("Box Weight Limits (g)", f"{box.max_weight:,}"),
         ("Pallet Name", pallet.name),
         ("Pallet Footprint (mm)", f"{pallet.length} x {pallet.width}"),

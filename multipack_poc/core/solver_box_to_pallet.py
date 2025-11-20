@@ -368,8 +368,9 @@ def pack_boxes_on_pallet(
     pallet_width = int(round(pallet.width * scale))
     usable_height = int(round(pallet.usable_height() * scale))
 
-    # Generate all 6 possible orientations (all permutations of length, width, height)
-    box_dims_scaled = tuple(int(round(d * scale)) for d in box.dimensions)
+    # Generate all 6 possible orientations using OUTER dimensions (including wall thickness)
+    # Outer dimensions are used because boxes are placed on pallets, not inside them
+    box_dims_scaled = box.scaled_outer_dimensions(scale)
     all_orientations = generate_axis_orientations(box_dims_scaled)
     
     # Filter orientations that fit on pallet footprint and within height
@@ -684,7 +685,8 @@ def pack_boxes_on_pallet(
                     )
                     placements.append(_scaled_to_real(scaled, scale))
             
-            used_volume = total_boxes * box.length * box.width * box.height
+            # Use outer dimensions for volume calculation (boxes on pallet use outer dimensions)
+            used_volume = total_boxes * box.outer_length * box.outer_width * box.outer_height
             pallet_volume = pallet.length * pallet.width * pallet.usable_height()
             pallet_weight_used = total_boxes * filled_box_weight
             base_placements = placements[:boxes_per_layer]

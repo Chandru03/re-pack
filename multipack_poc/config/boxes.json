@@ -4,6 +4,8 @@
     "length": 600,
     "width": 400,
     "height": 400,
-    "max_weight": 25000
+    "max_weight": 25000,
+    "tare_weight": 500,
+    "wall_thickness": 5.0
   }
 }

@@ -48,10 +48,11 @@ def main() -> None:
         width=box_template["width"],
         height=box_template["height"],
         max_weight=box_template["max_weight"],
-        tare_weight=500,
+        tare_weight=box_template.get("tare_weight", 500),
+        wall_thickness=box_template.get("wall_thickness", 5.0),
         name=box_template["name"],
     )
-    pallet_template = pallets_data["euro_pallet"]
+    pallet_template = pallets_data.get("europallet", pallets_data.get("euro_pallet"))
     pallet = Pallet.from_dict(pallet_template)
 
     carton_result = pack_cartons_into_box(package, box)

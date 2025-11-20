@@ -150,7 +150,23 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
         
         # Calculate and display box volume
         box_volume = length * width * height / 1_000_000  # Convert to liters
-        st.caption(f"Box Volume: {box_volume:.3f} L")
+        st.caption(f"Box Inner Volume: {box_volume:.3f} L")
+        
+        st.markdown("**Box Wall Thickness**")
+        wall_thickness = st.number_input(
+            "Wall Thickness (mm)", 
+            min_value=0.0, 
+            value=float(template.get("wall_thickness", 0.0)), 
+            step=0.01, 
+            format="%.2f",
+            help="Thickness of the box walls (used to calculate outer dimensions for pallet stacking)"
+        )
+        
+        # Calculate and display outer dimensions
+        outer_length = length + 2 * wall_thickness
+        outer_width = width + 2 * wall_thickness
+        outer_height = height + 2 * wall_thickness
+        st.caption(f"Outer Dimensions: {outer_length:.2f} × {outer_width:.2f} × {outer_height:.2f} mm")
         
         st.markdown("**Weight Constraints**")
         col4, col5 = st.columns(2)
@@ -165,7 +181,7 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
         tare_weight = col5.number_input(
             "Tare Weight (g)", 
             min_value=0.0, 
-            value=500.0, 
+            value=float(template.get("tare_weight", 500.0)), 
             step=0.01, 
             format="%.2f",
             help="Weight of the empty box"
@@ -177,6 +193,7 @@ def build_box_inputs(box_templates: Dict[str, Any]) -> Box:
         height=float(height),
         max_weight=float(max_weight),
         tare_weight=float(tare_weight),
+        wall_thickness=float(wall_thickness),
         name=name,
     )
 
@@ -377,12 +394,13 @@ def main() -> None:
                     f"(Max height: {pallet.max_height:.2f}mm - Deck height: {pallet.height:.2f}mm)\n"
                     f"- Max weight: {pallet.max_weight:,.0f}g\n\n"
                     f"**Box dimensions:**\n"
-                    f"- Height: {box.height:.2f}mm\n"
+                    f"- Inner height: {box.height:.2f}mm\n"
+                    f"- Outer height: {box.outer_height:.2f}mm (wall thickness: {box.wall_thickness:.2f}mm)\n"
                     f"- Filled box weight: {filled_box_weight:,.0f}g\n\n"
                     f"**Issue:** "
                     + (
-                        f"Box height ({box.height:.2f}mm) exceeds usable height ({pallet.usable_height():.2f}mm). "
-                        f"Increase Max Stack Height or decrease Box Height."
+                        f"Box outer height ({box.outer_height:.2f}mm) exceeds usable height ({pallet.usable_height():.2f}mm). "
+                        f"Increase Max Stack Height, decrease Box Height, or reduce Wall Thickness."
                         if "height insufficient" in pallet_result.solver_status.lower()
                         else (
                             f"Filled box weight ({filled_box_weight:,.0f}g) exceeds pallet capacity ({pallet.max_weight:,.0f}g). "
