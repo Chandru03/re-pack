@@ -1,7 +1,7 @@
 """
 Optimisation logic for stacking filled boxes onto a pallet.
 """
-
+ 
 from __future__ import annotations
 
 from dataclasses import dataclass
