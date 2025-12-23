@@ -8,6 +8,8 @@ A packing optimisation tool that uses Google OR-Tools to optimise carton packing
 - Optimise box stacking on pallets
 - Generate PDF reports with visualisations
 - Interactive Streamlit web interface
+https://i.pinimg.com/1200x/05/cc/34/05cc349d20a99372db0ea32462137d5c.jpg
+
 
 ## Installation
 
